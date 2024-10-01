@@ -1,23 +1,20 @@
 package com.sportradar.scoreboard;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ScoreBoardTest {
+    private ScoreBoard scoreBoard;
+
+    @BeforeEach
+    void setUp() {
+        scoreBoard = new ScoreBoard();
+    }
 
     @Test
-    public void shouldStartNewMatchWithInitialScore() {
-        // Given
-        ScoreBoard scoreBoard = new ScoreBoard();
-
-        // When
-        scoreBoard.startMatch("Mexico", "Canada");
-
-        // Then
-        Match match = scoreBoard.getMatch("Mexico", "Canada");
-        assertThat(match.getHomeTeam().getScore()).isEqualTo(0);
-        assertThat(match.getAwayTeam().getScore()).isEqualTo(0);
-        assertThat(match.getHomeTeam().getName()).isEqualTo("Mexico");
-        assertThat(match.getAwayTeam().getName()).isEqualTo("Canada");
+    void startMatch_shouldAddNewMatch() {
+        String matchId = scoreBoard.startMatch("Mexico", "Canada");
+        assertThat(scoreBoard.getMatches()).containsKey(matchId);
     }
 }

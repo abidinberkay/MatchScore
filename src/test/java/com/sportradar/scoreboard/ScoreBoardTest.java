@@ -100,29 +100,36 @@ public class ScoreBoardTest {
     }
 
     @Test
-    void getMatchSummary_shouldReturnOrderedMatches() {
-        String matchId1 = scoreBoard.startMatch("Uruguay", "Italy");
-        scoreBoard.updateScore(matchId1, "Uruguay", "Italy", 6, 6);
-
+    void getMatchSummary_shouldReturnOrderedMatches() throws InterruptedException {
+        String matchId1 = scoreBoard.startMatch("Mexico", "Canada");
+        scoreBoard.updateScore(matchId1, "Mexico", "Canada", 0, 5);
+        Thread.sleep(1);
         String matchId2 = scoreBoard.startMatch("Spain", "Brazil");
         scoreBoard.updateScore(matchId2, "Spain", "Brazil", 10, 2);
-
-        String matchId3 = scoreBoard.startMatch("Mexico", "Canada");
-        scoreBoard.updateScore(matchId3, "Mexico", "Canada", 0, 5);
-
-        String matchId4 = scoreBoard.startMatch("Argentina", "Australia");
-        scoreBoard.updateScore(matchId4, "Argentina", "Australia", 3, 1);
-
-        String matchId5 = scoreBoard.startMatch("Germany", "France");
-        scoreBoard.updateScore(matchId5, "Germany", "France", 2, 2);
+        Thread.sleep(1);
+        String matchId3 = scoreBoard.startMatch("Germany", "France");
+        scoreBoard.updateScore(matchId3, "Germany", "France", 2, 2);
+        Thread.sleep(1);
+        String matchId4 = scoreBoard.startMatch("Uruguay", "Italy");
+        scoreBoard.updateScore(matchId4, "Uruguay", "Italy", 6, 6);
+        Thread.sleep(1);
+        String matchId5 = scoreBoard.startMatch("Argentina", "Australia");
+        scoreBoard.updateScore(matchId5, "Argentina", "Australia", 3, 1);
+        Thread.sleep(1);
+        String matchId6 = scoreBoard.startMatch("Norway", "Japan");
+        scoreBoard.updateScore(matchId6, "Norway", "Japan", 1, 1);
+        Thread.sleep(1);
+        String matchId7 = scoreBoard.startMatch("Denmark", "Sweden");
+        scoreBoard.updateScore(matchId7, "Denmark", "Sweden", 1, 1);
 
         String summary = scoreBoard.getMatchSummary();
-        assertThat(summary).isEqualTo(
-                "Spain 10 - 2 Brazil\n" + // Highest score
-                        "Uruguay 6 - 6 Italy\n" + // Tied score
-                        "Mexico 0 - 5 Canada\n" + // Low score
+        assertThat(summary.trim()).isEqualTo(
+                "Uruguay 6 - 6 Italy\n" +
+                        "Spain 10 - 2 Brazil\n" +
+                        "Mexico 0 - 5 Canada\n" +
                         "Argentina 3 - 1 Australia\n" +
-                        "Germany 2 - 2 France\n"   // Tied score
-        );
+                        "Germany 2 - 2 France\n" +
+                        "Denmark 1 - 1 Sweden\n" +
+                        "Norway 1 - 1 Japan");
     }
 }

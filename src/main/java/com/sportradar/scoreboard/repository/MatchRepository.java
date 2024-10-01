@@ -39,4 +39,14 @@ public class MatchRepository {
     public Map<String, Match> getAllMatches() {
         return matches;
     }
+
+    /**
+     * Removes a match from the repository by its ID.
+     *
+     * @param matchId the ID of the match to remove
+     * @return the removed Match object or null if not found
+     */
+    public Match removeMatch(String matchId) {
+        return matches.remove(matchId);
+    }
 }

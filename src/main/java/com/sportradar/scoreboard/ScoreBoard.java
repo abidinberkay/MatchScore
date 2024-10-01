@@ -144,6 +144,10 @@ public class ScoreBoard {
     }
 
     public void endMatch(String matchId) {
-        //Todo: will be implemented
+        Match match = matchRepository.getMatch(matchId);
+        if (match == null) {
+            throw new IllegalArgumentException(ErrorStrings.INVALID_MATCH_ID); // Handle invalid match ID
+        }
+        matchRepository.removeMatch(matchId); // Remove match from the repository
     }
 }

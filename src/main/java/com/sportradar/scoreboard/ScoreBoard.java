@@ -40,11 +40,11 @@ public class ScoreBoard {
     /**
      * Updates the score of a match.
      *
-     * @param matchId the id of the match
+     * @param matchId      the id of the match
      * @param homeTeamName the name of the home team
      * @param awayTeamName the name of the away team
-     * @param homeScore the score of the home team
-     * @param awayScore the score of the away team
+     * @param homeScore    the score of the home team
+     * @param awayScore    the score of the away team
      * @throws IllegalArgumentException if team names are invalid or if scores are negative
      */
     public void updateScore(String matchId, String homeTeamName, String awayTeamName, int homeScore, int awayScore) {
@@ -85,12 +85,26 @@ public class ScoreBoard {
     }
 
     /**
+     * Ends a match by its ID and removes it from the repository.
+     *
+     * @param matchId the ID of the match to end
+     * @throws IllegalArgumentException if the match ID is invalid or the match does not exist
+     */
+    public void endMatch(String matchId) {
+        Match match = matchRepository.getMatch(matchId);
+        if (match == null) {
+            throw new IllegalArgumentException(ErrorStrings.INVALID_MATCH_ID); // Handle invalid match ID
+        }
+        matchRepository.removeMatch(matchId); // Remove match from the repository
+    }
+
+    /**
      * Compares two matches for ordering based on total score and start time.
      *
      * @param m1 the first match to compare
      * @param m2 the second match to compare
      * @return a negative integer, zero, or a positive integer as the first match
-     *         is less than, equal to, or greater than the second match
+     * is less than, equal to, or greater than the second match
      */
     private int compareMatches(Match m1, Match m2) {
         // Compare by total score in descending order
@@ -141,13 +155,5 @@ public class ScoreBoard {
         if (homeTeamName.equals(awayTeamName)) {
             throw new IllegalArgumentException(ErrorStrings.TEAM_NAMES_CANNOT_BE_SAME);
         }
-    }
-
-    public void endMatch(String matchId) {
-        Match match = matchRepository.getMatch(matchId);
-        if (match == null) {
-            throw new IllegalArgumentException(ErrorStrings.INVALID_MATCH_ID); // Handle invalid match ID
-        }
-        matchRepository.removeMatch(matchId); // Remove match from the repository
     }
 }

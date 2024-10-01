@@ -139,4 +139,12 @@ public class ScoreBoardTest {
         scoreBoard.endMatch(matchId);
         assertThat(scoreBoard.getMatchRepository().getMatch(matchId)).isNull(); // Ensure the match has been removed
     }
+
+    @Test
+    void endMatch_shouldThrowException_whenMatchIdIsInvalid() {
+        String invalidMatchId = "invalid-id";
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> scoreBoard.endMatch(invalidMatchId))
+                .withMessage(ErrorStrings.INVALID_MATCH_ID);
+    }
 }

@@ -58,7 +58,11 @@
 			<version>5.7.1</version>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.12.0</version> <!-- Check for the latest version -->
+		</dependency>
 		<!-- Assertions for better test readability -->
 		<dependency>
 			<groupId>org.assertj</groupId>

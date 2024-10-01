@@ -1,8 +1,10 @@
 package com.sportradar.scoreboard;
 
+import com.sportradar.scoreboard.constants.ErrorStrings;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class ScoreBoardTest {
     private ScoreBoard scoreBoard;
@@ -16,5 +18,40 @@ public class ScoreBoardTest {
     void startMatch_shouldAddNewMatch() {
         String matchId = scoreBoard.startMatch("Mexico", "Canada");
         assertThat(scoreBoard.getMatches()).containsKey(matchId);
+    }
+
+    @Test
+    void startMatch_shouldThrowException_whenHomeTeamNameIsNull() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> scoreBoard.startMatch(null, "Canada"))
+                .withMessage(ErrorStrings.TEAM_NAMES_CANNOT_BE_NULL_OR_BLANK);
+    }
+
+    @Test
+    void startMatch_shouldThrowException_whenAwayTeamNameIsNull() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> scoreBoard.startMatch("Mexico", null))
+                .withMessage(ErrorStrings.TEAM_NAMES_CANNOT_BE_NULL_OR_BLANK);
+    }
+
+    @Test
+    void startMatch_shouldThrowException_whenHomeTeamNameIsEmpty() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> scoreBoard.startMatch("", "Canada"))
+                .withMessage(ErrorStrings.TEAM_NAMES_CANNOT_BE_NULL_OR_BLANK);
+    }
+
+    @Test
+    void startMatch_shouldThrowException_whenAwayTeamNameIsEmpty() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> scoreBoard.startMatch("Mexico", ""))
+                .withMessage(ErrorStrings.TEAM_NAMES_CANNOT_BE_NULL_OR_BLANK);
+    }
+
+    @Test
+    void startMatch_shouldThrowException_whenTeamNamesAreSame() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> scoreBoard.startMatch("Mexico", "Mexico"))
+                .withMessage(ErrorStrings.TEAM_NAMES_CANNOT_BE_SAME);
     }
 }

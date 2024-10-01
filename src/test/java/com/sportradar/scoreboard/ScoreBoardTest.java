@@ -66,4 +66,36 @@ public class ScoreBoardTest {
         assertThat(match.getHomeTeam().getScore()).isEqualTo(10);
         assertThat(match.getAwayTeam().getScore()).isEqualTo(2);
     }
+
+    @Test
+    void updateScore_shouldThrowException_whenMatchIdIsInvalid() {
+        String invalidMatchId = "invalid-id";
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> scoreBoard.updateScore(invalidMatchId, "Spain", "Brazil", 10, 2))
+                .withMessage(ErrorStrings.INVALID_MATCH_ID);
+    }
+
+    @Test
+    void updateScore_shouldThrowException_whenHomeScoreIsNegative() {
+        String matchId = scoreBoard.startMatch("Argentina", "Chile");
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> scoreBoard.updateScore(matchId, "Argentina", "Chile", -1, 2))
+                .withMessage(ErrorStrings.SCORE_CANNOT_BE_NEGATIVE);
+    }
+
+    @Test
+    void updateScore_shouldThrowException_whenAwayScoreIsNegative() {
+        String matchId = scoreBoard.startMatch("Italy", "France");
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> scoreBoard.updateScore(matchId, "Italy", "France", 1, -2))
+                .withMessage(ErrorStrings.SCORE_CANNOT_BE_NEGATIVE);
+    }
+
+    @Test
+    void updateScore_shouldThrowException_whenTeamNamesDoNotMatch() {
+        String matchId = scoreBoard.startMatch("Germany", "England");
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> scoreBoard.updateScore(matchId, "Germany", "Brazil", 3, 1))
+                .withMessage(ErrorStrings.INVALID_TEAM_NAMES);
+    }
 }

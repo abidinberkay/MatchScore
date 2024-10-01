@@ -98,4 +98,31 @@ public class ScoreBoardTest {
                 .isThrownBy(() -> scoreBoard.updateScore(matchId, "Germany", "Brazil", 3, 1))
                 .withMessage(ErrorStrings.INVALID_TEAM_NAMES);
     }
+
+    @Test
+    void getMatchSummary_shouldReturnOrderedMatches() {
+        String matchId1 = scoreBoard.startMatch("Uruguay", "Italy");
+        scoreBoard.updateScore(matchId1, "Uruguay", "Italy", 6, 6);
+
+        String matchId2 = scoreBoard.startMatch("Spain", "Brazil");
+        scoreBoard.updateScore(matchId2, "Spain", "Brazil", 10, 2);
+
+        String matchId3 = scoreBoard.startMatch("Mexico", "Canada");
+        scoreBoard.updateScore(matchId3, "Mexico", "Canada", 0, 5);
+
+        String matchId4 = scoreBoard.startMatch("Argentina", "Australia");
+        scoreBoard.updateScore(matchId4, "Argentina", "Australia", 3, 1);
+
+        String matchId5 = scoreBoard.startMatch("Germany", "France");
+        scoreBoard.updateScore(matchId5, "Germany", "France", 2, 2);
+
+        String summary = scoreBoard.getMatchSummary();
+        assertThat(summary).isEqualTo(
+                "Spain 10 - 2 Brazil\n" + // Highest score
+                        "Uruguay 6 - 6 Italy\n" + // Tied score
+                        "Mexico 0 - 5 Canada\n" + // Low score
+                        "Argentina 3 - 1 Australia\n" +
+                        "Germany 2 - 2 France\n"   // Tied score
+        );
+    }
 }

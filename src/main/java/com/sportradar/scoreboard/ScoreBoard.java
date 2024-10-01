@@ -8,6 +8,8 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -63,6 +65,11 @@ public class ScoreBoard {
         // Update scores
         match.getHomeTeam().setScore(homeScore);
         match.getAwayTeam().setScore(awayScore);
+    }
+
+    public String getMatchSummary() {
+        //Todo: will be implemented
+        return null;
     }
 
     /**

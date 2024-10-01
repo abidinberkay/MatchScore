@@ -38,8 +38,19 @@ public class ScoreBoard {
         return matchId; // Return match ID for reference
     }
 
+    /**
+     * Update score of a match
+     *
+     * @param matchId the id of the match
+     * @param homeScore the score of the home team
+     * @param awayScore the score of the away team
+     */
     public void updateScore(String matchId, int homeScore, int awayScore) {
-        // Todo: will be implemented
+        Match match = matches.get(matchId);
+        if (match != null) {
+            match.getHomeTeam().setScore(homeScore);
+            match.getAwayTeam().setScore(awayScore);
+        }
     }
 
 

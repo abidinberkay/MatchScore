@@ -3,24 +3,20 @@ package com.sportradar.scoreboard;
 import com.sportradar.scoreboard.constants.ErrorStrings;
 import com.sportradar.scoreboard.model.Match;
 import com.sportradar.scoreboard.model.Team;
+import com.sportradar.scoreboard.repository.MatchRepository;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.UUID;
 
 /**
  * The ScoreBoard class represents a scoreboard for tracking ongoing matches.
  * It allows starting new matches, updating scores, and retrieving match information.
- *
- * @author berkaysimsek
- * @version 0.0.1
  */
 @Getter
 public class ScoreBoard {
-    private final Map<String, Match> matches = new LinkedHashMap<>();
+    private final MatchRepository matchRepository = new MatchRepository(); // Initialize repository
 
     /**
      * Starts a new match with the given home team and away team.
@@ -32,9 +28,9 @@ public class ScoreBoard {
      */
     public String startMatch(String homeTeamName, String awayTeamName) {
         validateTeamNames(homeTeamName, awayTeamName); // Validate team names
-        Match match = new Match(new Team(homeTeamName), new Team(awayTeamName), LocalDateTime.now());
+        Match match = new Match(new Team(homeTeamName, 0), new Team(awayTeamName, 0), LocalDateTime.now());
         String matchId = generateMatchId();
-        matches.put(matchId, match);
+        matchRepository.addMatch(matchId, match); // Use repository to add match
         return matchId; // Return match ID for reference
     }
 
@@ -42,17 +38,32 @@ public class ScoreBoard {
      * Update score of a match
      *
      * @param matchId the id of the match
+     * @param homeTeamName the name of the home team
+     * @param awayTeamName the name of the away team
      * @param homeScore the score of the home team
      * @param awayScore the score of the away team
      */
-    public void updateScore(String matchId, int homeScore, int awayScore) {
-        Match match = matches.get(matchId);
-        if (match != null) {
-            match.getHomeTeam().setScore(homeScore);
-            match.getAwayTeam().setScore(awayScore);
-        }
-    }
+    public void updateScore(String matchId, String homeTeamName, String awayTeamName, int homeScore, int awayScore) {
+        validateTeamNames(homeTeamName, awayTeamName); // Validate team names
 
+        if (homeScore < 0 || awayScore < 0) {
+            throw new IllegalArgumentException(ErrorStrings.SCORE_CANNOT_BE_NEGATIVE); // Handle negative scores
+        }
+
+        Match match = matchRepository.getMatch(matchId);
+        if (match == null) {
+            throw new IllegalArgumentException(ErrorStrings.INVALID_MATCH_ID); // Handle invalid match ID
+        }
+
+        // Check if the match teams match the given team names before updating scores
+        if (!match.getHomeTeam().getName().equals(homeTeamName) || !match.getAwayTeam().getName().equals(awayTeamName)) {
+            throw new IllegalArgumentException(ErrorStrings.INVALID_TEAM_NAMES); // Handle mismatched team names
+        }
+
+        // Update scores
+        match.getHomeTeam().setScore(homeScore);
+        match.getAwayTeam().setScore(awayScore);
+    }
 
     /**
      * Generates a unique match ID using UUID.

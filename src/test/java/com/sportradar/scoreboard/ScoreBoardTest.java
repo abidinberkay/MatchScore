@@ -4,6 +4,7 @@ import com.sportradar.scoreboard.constants.ErrorStrings;
 import com.sportradar.scoreboard.model.Match;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -18,7 +19,8 @@ public class ScoreBoardTest {
     @Test
     void startMatch_shouldAddNewMatch() {
         String matchId = scoreBoard.startMatch("Mexico", "Canada");
-        assertThat(scoreBoard.getMatches()).containsKey(matchId);
+        // Accessing matches through the MatchRepository
+        assertThat(scoreBoard.getMatchRepository().getMatch(matchId)).isNotNull();
     }
 
     @Test
@@ -59,8 +61,8 @@ public class ScoreBoardTest {
     @Test
     void updateScore_shouldChangeScores() {
         String matchId = scoreBoard.startMatch("Spain", "Brazil");
-        scoreBoard.updateScore(matchId, 10, 2);
-        Match match = scoreBoard.getMatches().get(matchId);
+        scoreBoard.updateScore(matchId, "Spain", "Brazil", 10, 2); // Pass team names for validation
+        Match match = scoreBoard.getMatchRepository().getMatch(matchId); // Accessing through MatchRepository
         assertThat(match.getHomeTeam().getScore()).isEqualTo(10);
         assertThat(match.getAwayTeam().getScore()).isEqualTo(2);
     }

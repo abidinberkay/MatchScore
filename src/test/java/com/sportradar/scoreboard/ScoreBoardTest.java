@@ -1,6 +1,7 @@
 package com.sportradar.scoreboard;
 
 import com.sportradar.scoreboard.constants.ErrorStrings;
+import com.sportradar.scoreboard.model.Match;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,5 +54,14 @@ public class ScoreBoardTest {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> scoreBoard.startMatch("Mexico", "Mexico"))
                 .withMessage(ErrorStrings.TEAM_NAMES_CANNOT_BE_SAME);
+    }
+
+    @Test
+    void updateScore_shouldChangeScores() {
+        String matchId = scoreBoard.startMatch("Spain", "Brazil");
+        scoreBoard.updateScore(matchId, 10, 2);
+        Match match = scoreBoard.getMatches().get(matchId);
+        assertThat(match.getHomeTeam().getScore()).isEqualTo(10);
+        assertThat(match.getAwayTeam().getScore()).isEqualTo(2);
     }
 }

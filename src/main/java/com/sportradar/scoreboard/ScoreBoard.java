@@ -38,6 +38,11 @@ public class ScoreBoard {
         return matchId; // Return match ID for reference
     }
 
+    public void updateScore(String matchId, int homeScore, int awayScore) {
+        // Todo: will be implemented
+    }
+
+
     /**
      * Generates a unique match ID using UUID.
      *

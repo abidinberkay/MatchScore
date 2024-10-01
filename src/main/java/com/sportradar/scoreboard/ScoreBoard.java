@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The ScoreBoard class represents a scoreboard for tracking ongoing matches.
@@ -17,6 +18,7 @@ import java.util.UUID;
 @Getter
 public class ScoreBoard {
     private final MatchRepository matchRepository = new MatchRepository(); // Initialize repository
+    private final AtomicLong matchCounter = new AtomicLong(0); // Counter to ensure unique timestamps
 
     /**
      * Starts a new match with the given home team and away team.
@@ -28,10 +30,17 @@ public class ScoreBoard {
      */
     public String startMatch(String homeTeamName, String awayTeamName) {
         validateTeamNames(homeTeamName, awayTeamName);
+        checkIfTeamIsAlreadyPlaying(homeTeamName, awayTeamName); // New check
 
-        LocalDateTime startTime = LocalDateTime.now(); // Current time as the start time
+        // Ensure unique time by adding nanoseconds based on the matchCounter
+        LocalDateTime startTime = LocalDateTime.now().plusNanos(matchCounter.incrementAndGet());
 
-        Match match = new Match(new Team(homeTeamName, 0), new Team(awayTeamName, 0), startTime);
+        Match match = Match.builder()
+                .homeTeam(new Team(homeTeamName, 0))
+                .awayTeam(new Team(awayTeamName, 0))
+                .startTime(startTime)
+                .build();
+
         String matchId = generateMatchId();
         matchRepository.addMatch(matchId, match);
         return matchId;
@@ -155,5 +164,23 @@ public class ScoreBoard {
         if (homeTeamName.equals(awayTeamName)) {
             throw new IllegalArgumentException(ErrorStrings.TEAM_NAMES_CANNOT_BE_SAME);
         }
+    }
+
+    /**
+     * Checks if either team is already participating in any ongoing match.
+     *
+     * @param homeTeamName the name of the home team
+     * @param awayTeamName the name of the away team
+     * @throws IllegalArgumentException if either team is already in an ongoing match
+     */
+    private void checkIfTeamIsAlreadyPlaying(String homeTeamName, String awayTeamName) {
+        matchRepository.getAllMatches().values().forEach(match -> {
+            if (match.getHomeTeam().getName().equals(homeTeamName) ||
+                    match.getAwayTeam().getName().equals(homeTeamName) ||
+                    match.getHomeTeam().getName().equals(awayTeamName) ||
+                    match.getAwayTeam().getName().equals(awayTeamName)) {
+                throw new IllegalArgumentException(ErrorStrings.TEAM_ALREADY_PLAYING); // Handle the case where the team is already playing
+            }
+        });
     }
 }

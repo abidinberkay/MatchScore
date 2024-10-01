@@ -8,8 +8,17 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-public class ScoreBoardTest {
+class ScoreBoardTest {
     private ScoreBoard scoreBoard;
+
+    private final String scoreBoardSummaryResult = """
+        Uruguay 6 - 6 Italy
+        Spain 10 - 2 Brazil
+        Mexico 0 - 5 Canada
+        Argentina 3 - 1 Australia
+        Germany 2 - 2 France
+        Denmark 1 - 1 Sweden
+        Norway 1 - 1 Japan""";
 
     @BeforeEach
     void setUp() {
@@ -19,8 +28,7 @@ public class ScoreBoardTest {
     @Test
     void startMatch_shouldAddNewMatch() {
         String matchId = scoreBoard.startMatch("Mexico", "Canada");
-        // Accessing matches through the MatchRepository
-        assertThat(scoreBoard.getMatchRepository().getMatch(matchId)).isNotNull();
+        assertMatchExists(matchId);
     }
 
     @Test
@@ -59,19 +67,32 @@ public class ScoreBoardTest {
     }
 
     @Test
+    void startMatch_shouldThrowException_whenTeamAlreadyHasOngoingMatch() {
+        // Start a match for team "Spain"
+        scoreBoard.startMatch("Spain", "Brazil");
+
+        // Try to start another match where "Spain" is a home team
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> scoreBoard.startMatch("Spain", "Argentina"))
+                .withMessage(ErrorStrings.TEAM_ALREADY_PLAYING);
+
+        // Try to start another match where "Spain" is an away team
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> scoreBoard.startMatch("Germany", "Spain"))
+                .withMessage(ErrorStrings.TEAM_ALREADY_PLAYING);
+    }
+
+    @Test
     void updateScore_shouldChangeScores() {
         String matchId = scoreBoard.startMatch("Spain", "Brazil");
-        scoreBoard.updateScore(matchId, "Spain", "Brazil", 10, 2); // Pass team names for validation
-        Match match = scoreBoard.getMatchRepository().getMatch(matchId); // Accessing through MatchRepository
-        assertThat(match.getHomeTeam().getScore()).isEqualTo(10);
-        assertThat(match.getAwayTeam().getScore()).isEqualTo(2);
+        scoreBoard.updateScore(matchId, "Spain", "Brazil", 10, 2);
+        assertScores(matchId, 10, 2);
     }
 
     @Test
     void updateScore_shouldThrowException_whenMatchIdIsInvalid() {
-        String invalidMatchId = "invalid-id";
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> scoreBoard.updateScore(invalidMatchId, "Spain", "Brazil", 10, 2))
+                .isThrownBy(() -> scoreBoard.updateScore("invalid-id", "Spain", "Brazil", 10, 2))
                 .withMessage(ErrorStrings.INVALID_MATCH_ID);
     }
 
@@ -100,51 +121,50 @@ public class ScoreBoardTest {
     }
 
     @Test
-    void getMatchSummary_shouldReturnOrderedMatches() throws InterruptedException {
-        String matchId1 = scoreBoard.startMatch("Mexico", "Canada");
-        scoreBoard.updateScore(matchId1, "Mexico", "Canada", 0, 5);
-        Thread.sleep(1);
-        String matchId2 = scoreBoard.startMatch("Spain", "Brazil");
-        scoreBoard.updateScore(matchId2, "Spain", "Brazil", 10, 2);
-        Thread.sleep(1);
-        String matchId3 = scoreBoard.startMatch("Germany", "France");
-        scoreBoard.updateScore(matchId3, "Germany", "France", 2, 2);
-        Thread.sleep(1);
-        String matchId4 = scoreBoard.startMatch("Uruguay", "Italy");
-        scoreBoard.updateScore(matchId4, "Uruguay", "Italy", 6, 6);
-        Thread.sleep(1);
-        String matchId5 = scoreBoard.startMatch("Argentina", "Australia");
-        scoreBoard.updateScore(matchId5, "Argentina", "Australia", 3, 1);
-        Thread.sleep(1);
-        String matchId6 = scoreBoard.startMatch("Norway", "Japan");
-        scoreBoard.updateScore(matchId6, "Norway", "Japan", 1, 1);
-        Thread.sleep(1);
-        String matchId7 = scoreBoard.startMatch("Denmark", "Sweden");
-        scoreBoard.updateScore(matchId7, "Denmark", "Sweden", 1, 1);
+    void getMatchSummary_shouldReturnOrderedMatches() {
+        startAndScoreMatch("Mexico", "Canada", 0, 5);
+        startAndScoreMatch("Spain", "Brazil", 10, 2);
+        startAndScoreMatch("Germany", "France", 2, 2);
+        startAndScoreMatch("Uruguay", "Italy", 6, 6);
+        startAndScoreMatch("Argentina", "Australia", 3, 1);
+        startAndScoreMatch("Norway", "Japan", 1, 1);
+        startAndScoreMatch("Denmark", "Sweden", 1, 1);
 
         String summary = scoreBoard.getMatchSummary();
-        assertThat(summary.trim()).isEqualTo(
-                "Uruguay 6 - 6 Italy\n" +
-                        "Spain 10 - 2 Brazil\n" +
-                        "Mexico 0 - 5 Canada\n" +
-                        "Argentina 3 - 1 Australia\n" +
-                        "Germany 2 - 2 France\n" +
-                        "Denmark 1 - 1 Sweden\n" +
-                        "Norway 1 - 1 Japan");
+        assertThat(summary.trim()).isEqualTo(scoreBoardSummaryResult);
     }
 
     @Test
     void endMatch_shouldRemoveMatch() {
         String matchId = scoreBoard.startMatch("Germany", "France");
         scoreBoard.endMatch(matchId);
-        assertThat(scoreBoard.getMatchRepository().getMatch(matchId)).isNull(); // Ensure the match has been removed
+        assertMatchDoesNotExist(matchId);
     }
 
     @Test
     void endMatch_shouldThrowException_whenMatchIdIsInvalid() {
-        String invalidMatchId = "invalid-id";
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> scoreBoard.endMatch(invalidMatchId))
+                .isThrownBy(() -> scoreBoard.endMatch("invalid-id"))
                 .withMessage(ErrorStrings.INVALID_MATCH_ID);
+    }
+
+    // Helper Methods
+    private void assertMatchExists(String matchId) {
+        assertThat(scoreBoard.getMatchRepository().getMatch(matchId)).isNotNull();
+    }
+
+    private void assertMatchDoesNotExist(String matchId) {
+        assertThat(scoreBoard.getMatchRepository().getMatch(matchId)).isNull();
+    }
+
+    private void assertScores(String matchId, int homeScore, int awayScore) {
+        Match match = scoreBoard.getMatchRepository().getMatch(matchId);
+        assertThat(match.getHomeTeam().getScore()).isEqualTo(homeScore);
+        assertThat(match.getAwayTeam().getScore()).isEqualTo(awayScore);
+    }
+
+    private void startAndScoreMatch(String homeTeam, String awayTeam, int homeScore, int awayScore) {
+        String matchId = scoreBoard.startMatch(homeTeam, awayTeam);
+        scoreBoard.updateScore(matchId, homeTeam, awayTeam, homeScore, awayScore);
     }
 }

@@ -132,4 +132,11 @@ public class ScoreBoardTest {
                         "Denmark 1 - 1 Sweden\n" +
                         "Norway 1 - 1 Japan");
     }
+
+    @Test
+    void endMatch_shouldRemoveMatch() {
+        String matchId = scoreBoard.startMatch("Germany", "France");
+        scoreBoard.endMatch(matchId);
+        assertThat(scoreBoard.getMatchRepository().getMatch(matchId)).isNull(); // Ensure the match has been removed
+    }
 }

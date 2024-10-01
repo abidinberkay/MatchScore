@@ -142,4 +142,8 @@ public class ScoreBoard {
             throw new IllegalArgumentException(ErrorStrings.TEAM_NAMES_CANNOT_BE_SAME);
         }
     }
+
+    public void endMatch(String matchId) {
+        //Todo: will be implemented
+    }
 }
